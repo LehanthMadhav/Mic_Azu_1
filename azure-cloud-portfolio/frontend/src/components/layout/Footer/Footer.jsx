@@ -1,5 +1,5 @@
 function Footer() {
-  return <nav>Footer</nav>;
+  return <footer>© 2026 My Azure Portfolio</footer>;
 }
 
 export default Footer;
