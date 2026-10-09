@@ -1,4 +1,4 @@
-import { PROFILE } from "../../../utils/constants";
+import landingProfile from "../../../assets/landing-profile.png";
 function Hero() {
   return (
     <section className="bg-slate-100">
@@ -12,7 +12,7 @@ function Hero() {
           </p>
 
           <h1 className="mt-4 text-6xl font-bold">
-            I'm Your Name
+            I'm Lehanth Madhav
           </h1>
 
           <h2 className="mt-4 text-2xl text-gray-600">
@@ -42,9 +42,9 @@ function Hero() {
         <div>
 
           <img
-            src="https://placehold.co/400x450"
-            alt="Profile"
-            className="rounded-3xl shadow-xl"
+            src={landingProfile}
+            alt="Profile portrait"
+            className="h-[460px] w-[350px] max-w-full rounded-3xl object-contain shadow-xl"
           />
 
         </div>
