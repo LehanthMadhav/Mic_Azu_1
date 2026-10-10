@@ -1,12 +1,23 @@
-@import "tailwindcss";
 
-html {
-  scroll-behavior: smooth;
-}
+@import "tailwindcss";
 
 :root {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -21,6 +32,77 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
+/* Hero entrance animations */
+@keyframes portfolio-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes portfolio-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes portfolio-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-fade-up {
+  animation: portfolio-fade-up 700ms ease-out both;
+}
+
+.animate-fade-in {
+  animation: portfolio-fade-in 900ms ease-out both;
+}
+
+.animate-float {
+  animation: portfolio-float 5s ease-in-out infinite;
+}
+
+.intro-delay-100 {
+  animation-delay: 100ms;
+}
+
+.intro-delay-200 {
+  animation-delay: 200ms;
+}
+
+.intro-delay-300 {
+  animation-delay: 300ms;
+}
+
+.intro-delay-400 {
+  animation-delay: 400ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-float {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
 }
