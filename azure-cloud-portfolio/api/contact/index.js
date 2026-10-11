@@ -1,20 +1,24 @@
 
-module.exports = async function (context, req) {
-  const respond = (status, body) => {
-    context.res = {
-      status,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body
-    };
-  };
+const { TableClient } = require("@azure/data-tables");
+const { randomUUID } = require("crypto");
 
-  // Only accept POST requests.
+const TABLE_NAME = "ContactMessages";
+
+function respond(context, status, body) {
+  context.res = {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body,
+  };
+}
+
+module.exports = async function (context, req) {
   if (req.method !== "POST") {
-    respond(405, {
+    respond(context, 405, {
       success: false,
-      message: "Method not allowed. Use POST."
+      message: "Method not allowed. Use POST.",
     });
     return;
   }
@@ -22,14 +26,13 @@ module.exports = async function (context, req) {
   const input = req.body;
 
   if (!input || typeof input !== "object" || Array.isArray(input)) {
-    respond(400, {
+    respond(context, 400, {
       success: false,
-      message: "A valid JSON request body is required."
+      message: "A valid JSON request body is required.",
     });
     return;
   }
 
-  // Read and normalize submitted fields.
   const name =
     typeof input.name === "string" ? input.name.trim() : "";
 
@@ -42,7 +45,6 @@ module.exports = async function (context, req) {
   const message =
     typeof input.message === "string" ? input.message.trim() : "";
 
-  // Validate the data.
   const errors = {};
 
   if (name.length < 2 || name.length > 100) {
@@ -65,22 +67,72 @@ module.exports = async function (context, req) {
   }
 
   if (Object.keys(errors).length > 0) {
-    respond(400, {
+    respond(context, 400, {
       success: false,
       message: "Please correct the submitted form data.",
-      errors
+      errors,
     });
     return;
   }
 
-  // Storage has not been connected yet.
-  context.log("Contact payload passed validation.");
+  const connectionString =
+    process.env.TABLE_STORAGE_CONNECTION_STRING;
 
-  respond(200, {
-    success: true,
-    validated: true,
-    stored: false,
-    message:
-      "Contact data passed validation. Message storage is not configured yet."
-  });
+  if (!connectionString) {
+    respond(context, 500, {
+      success: false,
+      message: "Contact storage is not configured.",
+    });
+    return;
+  }
+
+  try {
+    const tableClient = TableClient.fromConnectionString(
+      connectionString,
+      TABLE_NAME
+    );
+
+    // Create the table if it doesn't exist.
+    try {
+      await tableClient.createTable();
+    } catch (error) {
+      const tableAlreadyExists =
+        error.statusCode === 409 ||
+        error.code === "TableAlreadyExists";
+
+      if (!tableAlreadyExists) {
+        throw error;
+      }
+    }
+
+    // Save the validated contact message.
+    const entity = {
+      partitionKey: "contacts",
+      rowKey: `${Date.now()}-${randomUUID()}`,
+      name,
+      email,
+      subject,
+      message,
+      submittedAt: new Date().toISOString(),
+    };
+
+    await tableClient.createEntity(entity);
+
+    respond(context, 201, {
+      success: true,
+      stored: true,
+      message: "Your message has been saved successfully.",
+    });
+  } catch (error) {
+    // Log the storage error, not the visitor's submitted message.
+    context.log.error(
+      "Failed to save contact message to Table Storage.",
+      error.message
+    );
+
+    respond(context, 500, {
+      success: false,
+      message: "Unable to save your message. Please try again later.",
+    });
+  }
 };
